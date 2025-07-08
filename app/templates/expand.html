@@ -67,7 +67,7 @@
 <body>
 <h1>Story Generator</h1>
 <a href="/stories">View My Stories</a>
-<form method="post">
+<form method="post" id="expand-form">
     <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="this.form.submit()">
         <option value="" disabled {% if not selected_story %}selected{% endif %} style="color:#33ff33;">Select a story...</option>
         {% for story in stories %}
@@ -84,9 +84,56 @@
     {% endif %}
 
     <label for="ideas" style="color:#33ff33;">Ideas for Expanding:</label>
-    <textarea name="ideas" id="ideas" rows="4" required></textarea>
+    <textarea name="ideas" id="ideas" rows="4"></textarea>
     <input type="submit" value="Expand the Story">
 </form>
+
+<script>
+document.getElementById('expand-form').addEventListener('submit', function(e) {
+    var ideas = document.getElementById('ideas').value.trim();
+    if (!ideas) {
+        // Custom themed confirm dialog
+        let overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = 0;
+        overlay.style.left = 0;
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.background = 'rgba(24,28,31,0.95)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = 9999;
+
+        let box = document.createElement('div');
+        box.style.background = '#22282b';
+        box.style.color = '#33ff33';
+        box.style.border = '2px solid #33ff33';
+        box.style.borderRadius = '8px';
+        box.style.padding = '2em';
+        box.style.fontFamily = "'Fira Mono', 'Consolas', 'Menlo', monospace";
+        box.style.textAlign = 'center';
+        box.innerHTML = `
+            <div style="margin-bottom:1em;">The ideas field is empty.<br>Expand story off the last paragraph?</div>
+            <button id="expand-yes" style="background:#00ffea;color:#181c1f;font-weight:bold;border:none;border-radius:4px;padding:0.5em 1.5em;cursor:pointer;margin-right:1em;">Yes</button>
+            <button id="expand-no" style="background:#181c1f;color:#33ff33;font-weight:bold;border:1px solid #33ff33;border-radius:4px;padding:0.5em 1.5em;cursor:pointer;">No</button>
+        `;
+
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        e.preventDefault();
+
+        document.getElementById('expand-yes').onclick = function() {
+            document.body.removeChild(overlay);
+            document.getElementById('expand-form').submit();
+        };
+        document.getElementById('expand-no').onclick = function() {
+            document.body.removeChild(overlay);
+        };
+    }
+});
+</script>
 
 {% if expanded_content %}
     <label style="color:#33ff33;">Expanded Story:</label>

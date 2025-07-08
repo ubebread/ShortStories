@@ -60,17 +60,21 @@ def expand():
         ideas = request.form.get('ideas')
         if story_id:
             selected_story = Story.query.filter_by(id=story_id, user_session=session['session_id']).first()
-            if selected_story and ideas:
-                # Prompt for expansion
-                prompt = (
-                    f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
-                    f"Expand this story by adding 3 more paragraphs. Use these ideas for expansion: {ideas}\n"
-                    f"Only write the 3 new paragraphs."
-                )
-                new_paragraphs = generate_story(prompt)  # Your AI function
-                # Append new paragraphs to the original content
+            if selected_story:
+                if ideas:
+                    prompt = (
+                        f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
+                        f"Expand this story by adding 3 more paragraphs. Use these ideas for expansion: {ideas}\n"
+                        f"Only write the 3 new paragraphs. Do not preface your answer with any introduction or explanation."
+                    )
+                else:
+                    prompt = (
+                        f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
+                        f"Expand this story by adding 3 more paragraphs that continue naturally from the last paragraph. "
+                        f"Only write the 3 new paragraphs. Do not preface your answer with any introduction or explanation."
+                    )
+                new_paragraphs = generate_story(prompt)
                 expanded_content = selected_story.content + "\n\n" + new_paragraphs.strip()
-                # Overwrite the original story content with the expanded content
                 selected_story.content = expanded_content
                 db.session.commit()
     else:

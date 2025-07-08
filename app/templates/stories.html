@@ -37,10 +37,12 @@
             margin-bottom: 0.5em;
             font-weight: bold;
             letter-spacing: 1px;
+            cursor: pointer;
+            user-select: none;
         }
-        .story-content p {
-            margin: 0.5em 0;
-            white-space: pre-wrap;
+        .story-content {
+            display: none;
+            margin-top: 1em;
         }
         a {
             color: #00ffea;
@@ -61,7 +63,7 @@
 <ul>
 {% for story in stories %}
     <li>
-        <div class="story-title">&gt; {{ story.title }}</div>
+        <div class="story-title" onclick="toggleStory(this)">&gt; {{ story.title }}</div>
         <div class="story-content">
             {% if story.content %}
                 {% for paragraph in story.content.split('\n') %}
@@ -77,5 +79,15 @@
 {% endfor %}
 </ul>
 <a href="/">Write Another</a>
+<script>
+function toggleStory(titleElem) {
+    var content = titleElem.nextElementSibling;
+    if (content.style.display === "block") {
+        content.style.display = "none";
+    } else {
+        content.style.display = "block";
+    }
+}
+</script>
 </body>
 </html>
