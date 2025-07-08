@@ -1,0 +1,4 @@
+# story_writer/requirements.txt
+flask
+flask_sqlalchemy
+requests

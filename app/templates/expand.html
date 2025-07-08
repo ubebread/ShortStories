@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expand Story</title>
+    <style>
+        body {
+            background: #181c1f;
+            color: #33ff33;
+            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #00ffea;
+            background: #111;
+            padding: 1em;
+            margin: 0 0 1em 0;
+            font-size: 2em;
+            border-bottom: 2px solid #00ffea;
+            letter-spacing: 2px;
+        }
+        form {
+            background: #22282b;
+            margin: 2em auto;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #000a;
+            border-left: 4px solid #33ff33;
+            max-width: 500px;
+        }
+        label, input, textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 1em;
+            font-family: inherit;
+            font-size: 1em;
+            background: #181c1f;
+            color: #33ff33;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 0.5em;
+        }
+        input[type="submit"] {
+            background: #00ffea;
+            color: #181c1f;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        input[type="submit"]:hover {
+            background: #33ff33;
+            color: #181c1f;
+        }
+        a {
+            color: #00ffea;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 2em;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Story Generator</h1>
+<a href="/stories">View My Stories</a>
+<form method="post">
+    <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="this.form.submit()">
+        <option value="" disabled {% if not selected_story %}selected{% endif %} style="color:#33ff33;">Select a story...</option>
+        {% for story in stories %}
+            <option value="{{ story.id }}" {% if selected_story and story.id == selected_story.id %}selected{% endif %} style="color:#33ff33;">{{ story.title }}</option>
+        {% endfor %}
+    </select>
+
+    {% if selected_story %}
+        <label style="color:#33ff33;">Previous Story:</label>
+        <div style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:1em; margin-bottom:1em;">
+            <strong>{{ selected_story.title }}</strong><br><br>
+            {{ selected_story.content.replace('\n', '<br>')|safe }}
+        </div>
+    {% endif %}
+
+    <label for="ideas" style="color:#33ff33;">Ideas for Expanding:</label>
+    <textarea name="ideas" id="ideas" rows="4" required></textarea>
+    <input type="submit" value="Expand the Story">
+</form>
+
+{% if expanded_content %}
+    <label style="color:#33ff33;">Expanded Story:</label>
+    <div style="background:#22282b; color:#33ff33; border:1px solid #33ff33; border-radius:4px; padding:1em; margin-bottom:1em;">
+        <strong>{{ selected_story.title }}</strong><br><br>
+        {{ expanded_content.replace('\n', '<br>')|safe }}
+    </div>
+{% endif %}
+
+</body>
+</html>
