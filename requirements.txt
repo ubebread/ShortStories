@@ -1,4 +1,5 @@
 # story_writer/requirements.txt
+# Requirements for the Story Writer application
 flask
 flask_sqlalchemy
 requests
