@@ -31,8 +31,8 @@ def index():
 
         prompt = (
             f"Write a short story for a {int(age_raw)}-year-old. "
-            f"The story should include these ideas. "
-            f"Start with a title on the first line, then a blank line, then the story: {ideas}"
+            f"Use these ideas in the story:\n\n{ideas}\n\n"
+            f"Start with a title on the first line, then a blank line, then the story."
         )
         story = generate_story(prompt)
 
@@ -63,7 +63,7 @@ def expand():
     if 'session_id' not in session:
         return redirect('/')
 
-    stories = Story.query.filter_by(user_session=session['session_id']).all()
+    stories = Story.query.filter_by(user_session=session['session_id']).order_by(Story.created_at.desc()).all()
     selected_story = None
     expanded_content = None
 
@@ -71,13 +71,19 @@ def expand():
         story_id = request.form.get('story')
         ideas = request.form.get('ideas', '').strip()
 
-        if story_id:
+        if len(ideas) > MAX_IDEAS_LEN:
+            flash(f'Ideas must be {MAX_IDEAS_LEN} characters or fewer.')
+        elif not story_id:
+            flash('Please select a story to expand.')
+        else:
             selected_story = Story.query.filter_by(id=story_id, user_session=session['session_id']).first()
-            if selected_story:
+            if not selected_story:
+                flash('Story not found.')
+            else:
                 if ideas:
                     prompt = (
                         f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
-                        f"Expand this story by adding 3 more paragraphs. Use these ideas for expansion: {ideas}\n"
+                        f"Expand this story by adding 3 more paragraphs. Use these ideas:\n\n{ideas}\n\n"
                         f"Only write the 3 new paragraphs. Do not preface your answer with any introduction or explanation."
                     )
                 else:
@@ -91,6 +97,8 @@ def expand():
                     expanded_content = selected_story.content + "\n\n" + new_paragraphs.strip()
                     selected_story.content = expanded_content
                     db.session.commit()
+                else:
+                    flash('Story expansion failed. Is Ollama running?')
     else:
         story_id = request.args.get('story')
         if story_id:

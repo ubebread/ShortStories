@@ -65,8 +65,16 @@
     </style>
 </head>
 <body>
-<h1>Story Generator</h1>
+<h1>Expand Story</h1>
+<a href="/">Write New Story</a>
 <a href="/stories">View My Stories</a>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div style="color:#ff5555; background:#2a1c1c; border-left:4px solid #ff5555; margin:1em 2em; padding:0.75em 1em; border-radius:4px;">
+      {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 <form method="post" id="expand-form">
     <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="window.location.href='/expand?story=' + this.value">
         <option value="" disabled {% if not selected_story %}selected{% endif %} style="color:#33ff33;">Select a story...</option>
@@ -136,8 +144,8 @@ document.getElementById('expand-form').addEventListener('submit', function(e) {
 </script>
 
 {% if expanded_content %}
-    <label style="color:#33ff33;">Expanded Story:</label>
-    <div style="background:#22282b; color:#33ff33; border:1px solid #33ff33; border-radius:4px; padding:1em; margin-bottom:1em;">
+    <p style="color:#33ff33; margin:1em 2em 0.25em; font-weight:bold;">Expanded Story:</p>
+    <div style="background:#22282b; color:#33ff33; border:1px solid #33ff33; border-radius:4px; padding:1em; margin:0 2em 1em;">
         <strong>{{ selected_story.title }}</strong><br><br>
         {{ expanded_content | e | replace('\n', '<br>') | safe }}
     </div>
