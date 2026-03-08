@@ -36,13 +36,13 @@ def index():
         )
         story = generate_story(prompt)
 
-        if story:
-            lines = story.strip().split('\n')
-            title = lines[0].strip() if lines else "Untitled"
-            content = '\n'.join(lines[2:]).strip() if len(lines) > 2 else '\n'.join(lines[1:]).strip()
-        else:
-            title = "Untitled"
-            content = ""
+        if not story:
+            flash('Story generation failed. Is Ollama running?')
+            return render_template('index.html')
+
+        lines = story.strip().split('\n')
+        title = lines[0].strip() if lines else "Untitled"
+        content = '\n'.join(lines[2:]).strip() if len(lines) > 2 else '\n'.join(lines[1:]).strip()
 
         new_story = Story(user_session=session['session_id'], title=title, content=content)
         db.session.add(new_story)

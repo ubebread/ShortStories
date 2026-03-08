@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>My Stories</title>
     <style>
         body {
@@ -76,6 +77,8 @@
             {% endif %}
         </div>
     </li>
+{% else %}
+    <li style="border-left-color:#555; color:#555;">No stories yet. <a href="/" style="margin-left:0;">Write your first one!</a></li>
 {% endfor %}
 </ul>
 <a href="/">Write Another</a>

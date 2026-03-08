@@ -68,7 +68,7 @@
 <h1>Story Generator</h1>
 <a href="/stories">View My Stories</a>
 <form method="post" id="expand-form">
-    <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="this.form.submit()">
+    <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="window.location.href='/expand?story=' + this.value">
         <option value="" disabled {% if not selected_story %}selected{% endif %} style="color:#33ff33;">Select a story...</option>
         {% for story in stories %}
             <option value="{{ story.id }}" {% if selected_story and story.id == selected_story.id %}selected{% endif %} style="color:#33ff33;">{{ story.title }}</option>
