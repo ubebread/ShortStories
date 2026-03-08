@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 class Story(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_session = db.Column(db.String(64), nullable=False)
+    user_session = db.Column(db.String(64), nullable=False, index=True)
     title = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
