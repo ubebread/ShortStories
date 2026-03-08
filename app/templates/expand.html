@@ -79,7 +79,7 @@
         <label style="color:#33ff33;">Previous Story:</label>
         <div style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:1em; margin-bottom:1em;">
             <strong>{{ selected_story.title }}</strong><br><br>
-            {{ selected_story.content.replace('\n', '<br>')|safe }}
+            {{ selected_story.content | e | replace('\n', '<br>') | safe }}
         </div>
     {% endif %}
 
@@ -139,7 +139,7 @@ document.getElementById('expand-form').addEventListener('submit', function(e) {
     <label style="color:#33ff33;">Expanded Story:</label>
     <div style="background:#22282b; color:#33ff33; border:1px solid #33ff33; border-radius:4px; padding:1em; margin-bottom:1em;">
         <strong>{{ selected_story.title }}</strong><br><br>
-        {{ expanded_content.replace('\n', '<br>')|safe }}
+        {{ expanded_content | e | replace('\n', '<br>') | safe }}
     </div>
 {% endif %}
 

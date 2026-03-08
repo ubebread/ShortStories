@@ -66,6 +66,13 @@
 <body>
 <h1>Short Stories</h1>
 <a href="/stories">View My Stories</a>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div style="color:#ff5555; background:#2a1c1c; border-left:4px solid #ff5555; margin:1em 2em; padding:0.75em 1em; border-radius:4px;">
+      {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 <a href="/expand" style="margin-left:2em;">Expand a Story</a>
 <form method="post">
     <label for="age">Age Group:</label>
