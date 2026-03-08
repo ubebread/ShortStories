@@ -9,3 +9,7 @@ class Story(db.Model):
     title = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    @staticmethod
+    def for_session(session_id):
+        return Story.query.filter_by(user_session=session_id).order_by(Story.created_at.desc()).all()

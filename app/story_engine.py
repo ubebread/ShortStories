@@ -15,9 +15,5 @@ def generate_story(prompt):
         response = requests.post(OLLAMA_URL, json=payload, timeout=120)
         response.raise_for_status()
         return response.json().get('response', '')
-    except requests.exceptions.Timeout:
-        return None
-    except requests.exceptions.ConnectionError:
-        return None
     except (requests.exceptions.RequestException, KeyError, ValueError):
         return None
