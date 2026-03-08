@@ -1,82 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Expand Story</title>
-    <style>
-        body {
-            background: #181c1f;
-            color: #33ff33;
-            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            color: #00ffea;
-            background: #111;
-            padding: 1em;
-            margin: 0 0 1em 0;
-            font-size: 2em;
-            border-bottom: 2px solid #00ffea;
-            letter-spacing: 2px;
-        }
-        form {
-            background: #22282b;
-            margin: 2em auto;
-            padding: 2em;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px #000a;
-            border-left: 4px solid #33ff33;
-            max-width: 500px;
-        }
-        label, input, textarea {
-            display: block;
-            width: 100%;
-            margin-bottom: 1em;
-            font-family: inherit;
-            font-size: 1em;
-            background: #181c1f;
-            color: #33ff33;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 0.5em;
-        }
-        input[type="submit"] {
-            background: #00ffea;
-            color: #181c1f;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        input[type="submit"]:hover {
-            background: #33ff33;
-            color: #181c1f;
-        }
-        a {
-            color: #00ffea;
-            text-decoration: none;
-            font-weight: bold;
-            margin-left: 2em;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-<h1>Expand Story</h1>
-<a href="/">Write New Story</a>
-<a href="/stories">View My Stories</a>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <div style="color:#ff5555; background:#2a1c1c; border-left:4px solid #ff5555; margin:1em 2em; padding:0.75em 1em; border-radius:4px;">
-      {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
+{% extends "base.html" %}
+
+{% block title %}Expand Story{% endblock %}
+{% block heading %}Expand Story{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('main.index') }}">Write New Story</a>
+<a href="{{ url_for('main.stories') }}">View My Stories</a>
+{% endblock %}
+
+{% block content %}
 <form method="post" id="expand-form">
-    <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="window.location.href='/expand?story=' + this.value">
+    <select id="story-select" name="story" required style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:0.5em; width:100%;" onchange="window.location.href='{{ url_for('main.expand') }}?story=' + this.value">
         <option value="" disabled {% if not selected_story %}selected{% endif %} style="color:#33ff33;">Select a story...</option>
         {% for story in stories %}
             <option value="{{ story.id }}" {% if selected_story and story.id == selected_story.id %}selected{% endif %} style="color:#33ff33;">{{ story.title }}</option>
@@ -92,16 +26,17 @@
     {% endif %}
 
     <label for="ideas" style="color:#33ff33;">Ideas for Expanding:</label>
-    <textarea name="ideas" id="ideas" rows="4"></textarea>
+    <textarea name="ideas" id="ideas" rows="4" maxlength="1000"></textarea>
     <input type="submit" value="Expand the Story">
 </form>
+{% endblock %}
 
+{% block scripts %}
 <script>
 document.getElementById('expand-form').addEventListener('submit', function(e) {
     var ideas = document.getElementById('ideas').value.trim();
     if (!ideas) {
-        // Custom themed confirm dialog
-        let overlay = document.createElement('div');
+        var overlay = document.createElement('div');
         overlay.style.position = 'fixed';
         overlay.style.top = 0;
         overlay.style.left = 0;
@@ -113,7 +48,7 @@ document.getElementById('expand-form').addEventListener('submit', function(e) {
         overlay.style.justifyContent = 'center';
         overlay.style.zIndex = 9999;
 
-        let box = document.createElement('div');
+        var box = document.createElement('div');
         box.style.background = '#22282b';
         box.style.color = '#33ff33';
         box.style.border = '2px solid #33ff33';
@@ -121,11 +56,9 @@ document.getElementById('expand-form').addEventListener('submit', function(e) {
         box.style.padding = '2em';
         box.style.fontFamily = "'Fira Mono', 'Consolas', 'Menlo', monospace";
         box.style.textAlign = 'center';
-        box.innerHTML = `
-            <div style="margin-bottom:1em;">The ideas field is empty.<br>Expand story off the last paragraph?</div>
-            <button id="expand-yes" style="background:#00ffea;color:#181c1f;font-weight:bold;border:none;border-radius:4px;padding:0.5em 1.5em;cursor:pointer;margin-right:1em;">Yes</button>
-            <button id="expand-no" style="background:#181c1f;color:#33ff33;font-weight:bold;border:1px solid #33ff33;border-radius:4px;padding:0.5em 1.5em;cursor:pointer;">No</button>
-        `;
+        box.innerHTML = '<div style="margin-bottom:1em;">The ideas field is empty.<br>Expand story off the last paragraph?</div>' +
+            '<button id="expand-yes" style="background:#00ffea;color:#181c1f;font-weight:bold;border:none;border-radius:4px;padding:0.5em 1.5em;cursor:pointer;margin-right:1em;">Yes</button>' +
+            '<button id="expand-no" style="background:#181c1f;color:#33ff33;font-weight:bold;border:1px solid #33ff33;border-radius:4px;padding:0.5em 1.5em;cursor:pointer;">No</button>';
 
         overlay.appendChild(box);
         document.body.appendChild(overlay);
@@ -150,6 +83,4 @@ document.getElementById('expand-form').addEventListener('submit', function(e) {
         {{ expanded_content | e | replace('\n', '<br>') | safe }}
     </div>
 {% endif %}
-
-</body>
-</html>
+{% endblock %}

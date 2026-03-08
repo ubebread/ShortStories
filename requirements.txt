@@ -1,5 +1,5 @@
 # story_writer/requirements.txt
 # Requirements for the Story Writer application
-flask
-flask_sqlalchemy
-requests
+flask>=3.0,<4.0
+flask_sqlalchemy>=3.1,<4.0
+requests>=2.31,<3.0

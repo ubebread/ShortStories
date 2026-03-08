@@ -1,5 +1,6 @@
 # story_writer/app/routes.py
-from flask import Blueprint, request, render_template, redirect, session, flash
+from functools import wraps
+from flask import Blueprint, request, render_template, redirect, url_for, session, flash
 from .models import db, Story
 from .story_engine import generate_story
 import uuid
@@ -7,6 +8,16 @@ import uuid
 main = Blueprint('main', __name__)
 
 MAX_IDEAS_LEN = 1000
+
+
+def require_session(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'session_id' not in session:
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated
+
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -17,17 +28,20 @@ def index():
         age_raw = request.form.get('age', '').strip()
         ideas = request.form.get('ideas', '').strip()
 
+        def _rerender():
+            return render_template('index.html', age=age_raw, ideas=ideas)
+
         if not age_raw.isdigit() or not (1 <= int(age_raw) <= 120):
             flash('Please enter a valid age between 1 and 120.')
-            return render_template('index.html')
+            return _rerender()
 
         if not ideas:
             flash('Please enter some story ideas.')
-            return render_template('index.html')
+            return _rerender()
 
         if len(ideas) > MAX_IDEAS_LEN:
             flash(f'Ideas must be {MAX_IDEAS_LEN} characters or fewer.')
-            return render_template('index.html')
+            return _rerender()
 
         prompt = (
             f"Write a short story for a {int(age_raw)}-year-old. "
@@ -38,7 +52,7 @@ def index():
 
         if not story:
             flash('Story generation failed. Is Ollama running?')
-            return render_template('index.html')
+            return _rerender()
 
         lines = story.strip().split('\n')
         title = lines[0].strip() if lines else "Untitled"
@@ -47,51 +61,49 @@ def index():
         new_story = Story(user_session=session['session_id'], title=title, content=content)
         db.session.add(new_story)
         db.session.commit()
-        return redirect('/stories')
+        return redirect(url_for('main.stories'))
 
     return render_template('index.html')
 
+
 @main.route('/stories')
+@require_session
 def stories():
-    if 'session_id' not in session:
-        return redirect('/')
-    user_stories = Story.query.filter_by(user_session=session['session_id']).order_by(Story.created_at.desc()).all()
+    user_stories = Story.for_session(session['session_id'])
     return render_template('stories.html', stories=user_stories)
 
-@main.route('/expand', methods=['GET', 'POST'])
-def expand():
-    if 'session_id' not in session:
-        return redirect('/')
 
-    stories = Story.query.filter_by(user_session=session['session_id']).order_by(Story.created_at.desc()).all()
+@main.route('/expand', methods=['GET', 'POST'])
+@require_session
+def expand():
+    user_stories = Story.for_session(session['session_id'])
     selected_story = None
     expanded_content = None
 
     if request.method == 'POST':
-        story_id = request.form.get('story')
+        story_id = request.form.get('story', '').strip()
         ideas = request.form.get('ideas', '').strip()
 
         if len(ideas) > MAX_IDEAS_LEN:
             flash(f'Ideas must be {MAX_IDEAS_LEN} characters or fewer.')
-        elif not story_id:
+        elif not story_id or not story_id.isdigit():
             flash('Please select a story to expand.')
         else:
-            selected_story = Story.query.filter_by(id=story_id, user_session=session['session_id']).first()
+            sid = int(story_id)
+            selected_story = next((s for s in user_stories if s.id == sid), None)
             if not selected_story:
                 flash('Story not found.')
             else:
+                base_prompt = (
+                    f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
+                    f"Expand this story by adding 3 more paragraphs"
+                )
                 if ideas:
-                    prompt = (
-                        f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
-                        f"Expand this story by adding 3 more paragraphs. Use these ideas:\n\n{ideas}\n\n"
-                        f"Only write the 3 new paragraphs. Do not preface your answer with any introduction or explanation."
-                    )
+                    prompt = base_prompt + f". Use these ideas:\n\n{ideas}\n\n"
                 else:
-                    prompt = (
-                        f"Here is a story:\n\nTitle: {selected_story.title}\n\n{selected_story.content}\n\n"
-                        f"Expand this story by adding 3 more paragraphs that continue naturally from the last paragraph. "
-                        f"Only write the 3 new paragraphs. Do not preface your answer with any introduction or explanation."
-                    )
+                    prompt = base_prompt + " that continue naturally from the last paragraph. "
+                prompt += "Only write the 3 new paragraphs. Do not preface your answer with any introduction or explanation."
+
                 new_paragraphs = generate_story(prompt)
                 if new_paragraphs:
                     expanded_content = selected_story.content + "\n\n" + new_paragraphs.strip()
@@ -100,13 +112,14 @@ def expand():
                 else:
                     flash('Story expansion failed. Is Ollama running?')
     else:
-        story_id = request.args.get('story')
-        if story_id:
-            selected_story = Story.query.filter_by(id=story_id, user_session=session['session_id']).first()
+        story_id = request.args.get('story', '').strip()
+        if story_id and story_id.isdigit():
+            sid = int(story_id)
+            selected_story = next((s for s in user_stories if s.id == sid), None)
 
     return render_template(
         'expand.html',
-        stories=stories,
+        stories=user_stories,
         selected_story=selected_story,
         expanded_content=expanded_content
     )

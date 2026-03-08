@@ -1,25 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Stories</title>
-    <style>
-        body {
-            background: #181c1f;
-            color: #33ff33;
-            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            color: #00ffea;
-            background: #111;
-            padding: 1em;
-            margin: 0 0 1em 0;
-            font-size: 2em;
-            border-bottom: 2px solid #00ffea;
-            letter-spacing: 2px;
-        }
+{% extends "base.html" %}
+
+{% block title %}My Stories{% endblock %}
+{% block heading %}Your Stories{% endblock %}
+
+{% block extra_style %}
         ul {
             list-style: none;
             padding: 0;
@@ -45,24 +29,17 @@
             display: none;
             margin-top: 1em;
         }
-        a {
-            color: #00ffea;
-            text-decoration: none;
-            font-weight: bold;
-            margin-left: 2em;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
         em {
             color: #ff5;
         }
-    </style>
-</head>
-<body>
-<h1>Your Stories</h1>
-<a href="/">Write Another</a>
-<a href="/expand">Expand a Story</a>
+{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('main.index') }}">Write Another</a>
+<a href="{{ url_for('main.expand') }}">Expand a Story</a>
+{% endblock %}
+
+{% block content %}
 <ul>
 {% for story in stories %}
     <li>
@@ -80,9 +57,12 @@
         </div>
     </li>
 {% else %}
-    <li style="border-left-color:#555; color:#555;">No stories yet. <a href="/" style="margin-left:0;">Write your first one!</a></li>
+    <li style="border-left-color:#555; color:#555;">No stories yet. <a href="{{ url_for('main.index') }}" style="margin-left:0;">Write your first one!</a></li>
 {% endfor %}
 </ul>
+{% endblock %}
+
+{% block scripts %}
 <script>
 function toggleStory(titleElem) {
     var content = titleElem.nextElementSibling;
@@ -93,5 +73,4 @@ function toggleStory(titleElem) {
     }
 }
 </script>
-</body>
-</html>
+{% endblock %}
