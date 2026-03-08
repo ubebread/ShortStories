@@ -61,6 +61,8 @@
 </head>
 <body>
 <h1>Your Stories</h1>
+<a href="/">Write Another</a>
+<a href="/expand">Expand a Story</a>
 <ul>
 {% for story in stories %}
     <li>
@@ -81,8 +83,6 @@
     <li style="border-left-color:#555; color:#555;">No stories yet. <a href="/" style="margin-left:0;">Write your first one!</a></li>
 {% endfor %}
 </ul>
-<a href="/">Write Another</a>
-<a href="/expand">Expand a Story</a>
 <script>
 function toggleStory(titleElem) {
     var content = titleElem.nextElementSibling;

@@ -67,6 +67,7 @@
 <body>
 <h1>Short Stories</h1>
 <a href="/stories">View My Stories</a>
+<a href="/expand" style="margin-left:2em;">Expand a Story</a>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <div style="color:#ff5555; background:#2a1c1c; border-left:4px solid #ff5555; margin:1em 2em; padding:0.75em 1em; border-radius:4px;">
@@ -74,11 +75,10 @@
     </div>
   {% endif %}
 {% endwith %}
-<a href="/expand" style="margin-left:2em;">Expand a Story</a>
 <form method="post">
     <label for="age">Age Group:</label>
-    <input type="number" name="age" id="age" required>
-    <label for="ideas">4 Story Ideas:</label>
+    <input type="number" name="age" id="age" min="1" max="120" required>
+    <label for="ideas">Story Ideas:</label>
     <textarea name="ideas" id="ideas" rows="4" required></textarea>
     <input type="submit" value="Generate Story">
 </form>

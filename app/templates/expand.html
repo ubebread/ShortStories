@@ -84,7 +84,7 @@
     </select>
 
     {% if selected_story %}
-        <label style="color:#33ff33;">Previous Story:</label>
+        <span style="color:#33ff33; display:block; margin-bottom:0.5em;">Previous Story:</span>
         <div style="background:#181c1f; color:#33ff33; border:1px solid #333; border-radius:4px; padding:1em; margin-bottom:1em;">
             <strong>{{ selected_story.title }}</strong><br><br>
             {{ selected_story.content | e | replace('\n', '<br>') | safe }}
