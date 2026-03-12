@@ -9,6 +9,7 @@ A Flask web application that generates and expands age-appropriate short stories
 - [Prerequisites](#prerequisites)
 - [Installation on Linux](#installation-on-linux)
 - [Installation on Windows](#installation-on-windows)
+- [Installation with Docker Desktop (Windows)](#installation-with-docker-desktop-windows)
 - [Running the App](#running-the-app)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -167,6 +168,115 @@ Open your browser and navigate to: **http://localhost:5000**
 
 ---
 
+## Installation with Docker Desktop (Windows)
+
+Docker Desktop bundles Docker Engine and Docker Compose into a single GUI application, making it the easiest way to run the app on Windows without installing Python or Ollama manually.
+
+### 1. Install Docker Desktop
+
+1. Download the installer from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
+2. Run the installer and follow the prompts.
+3. When asked, enable **"Use WSL 2 instead of Hyper-V"** (recommended — better performance).
+   - If WSL 2 is not already installed, Docker Desktop will prompt you to install it.
+4. Restart your computer when prompted.
+5. Launch Docker Desktop from the Start menu and wait for the engine to start (the whale icon in the system tray turns solid white).
+
+> **WSL 2 backend requirement:** WSL 2 requires Windows 10 version 2004 (build 19041) or Windows 11. Run `winver` in PowerShell to check your build number.
+
+### 2. Enable WSL 2 (if not already active)
+
+Open PowerShell as Administrator and run:
+
+```powershell
+wsl --install
+wsl --set-default-version 2
+```
+
+Restart your computer, then re-open Docker Desktop. Under **Settings → General**, confirm "Use the WSL 2 based engine" is checked.
+
+### 3. Clone the repository
+
+Open PowerShell:
+
+```powershell
+git clone <repository-url> ShortStories
+cd ShortStories
+```
+
+> If Git is not installed, download it from [git-scm.com](https://git-scm.com/download/win).
+
+### 4. Start the app with Docker Compose
+
+```powershell
+docker compose up -d
+```
+
+This single command:
+- Builds the **ShortStories** app image from the included `Dockerfile`
+- Pulls the official **Ollama** image
+- Starts both containers and wires them together
+- Creates persistent volumes for the database and AI model files
+
+First run will take several minutes while Docker downloads the Ollama image (~1.5 GB). Subsequent starts are instant.
+
+### 5. Pull the AI model
+
+Ollama is now running inside a container but has no model yet. Pull `llama3`:
+
+```powershell
+docker exec shortstories-ollama ollama pull llama3
+```
+
+This downloads the model into the `ollama_data` Docker volume (~4.7 GB). You only need to do this once.
+
+### 6. Open the app
+
+Navigate to **http://localhost:5000** in your browser.
+
+### Stopping and starting
+
+```powershell
+# Stop both containers (data is preserved in volumes)
+docker compose down
+
+# Start again
+docker compose up -d
+
+# View live logs
+docker compose logs -f
+
+# View logs for a single service
+docker compose logs -f app
+docker compose logs -f ollama
+```
+
+### Changing configuration
+
+Create a `.env` file in the project root to override defaults:
+
+```
+SECRET_KEY=your-secret-key-here
+OLLAMA_MODEL=llama3
+```
+
+Then restart:
+
+```powershell
+docker compose down && docker compose up -d
+```
+
+### Resetting all data
+
+To wipe the database and downloaded models and start fresh:
+
+```powershell
+docker compose down -v
+```
+
+> **Warning:** `-v` deletes the Docker volumes, including the Ollama model (~4.7 GB). You will need to re-run `ollama pull llama3` afterwards.
+
+---
+
 ## Running the App
 
 Once started, the server listens on all interfaces at port **5000**:
@@ -301,3 +411,58 @@ python run.py
 ### Permission denied on Linux when installing Ollama
 
 Run the install script without `sudo` — the installer handles privilege escalation internally. If the issue persists, consult the [Ollama Linux docs](https://github.com/ollama/ollama/blob/main/docs/linux.md).
+
+---
+
+### Docker: containers start but story generation fails
+
+**Symptom:** The app loads but generating a story returns an error.
+
+The `app` container may have started before Ollama finished initializing. Check the Ollama logs:
+
+```powershell
+docker compose logs ollama
+```
+
+Wait until you see `Listening on 0.0.0.0:11434`, then try again. If the model is missing, pull it:
+
+```powershell
+docker exec shortstories-ollama ollama pull llama3
+```
+
+---
+
+### Docker: port 5000 already in use
+
+Another process is using port 5000. Either stop that process (see the port conflict section above) or change the host port in `docker-compose.yml`:
+
+```yaml
+ports:
+  - "5001:5000"   # change 5001 to any free port
+```
+
+Then restart: `docker compose down && docker compose up -d` and open **http://localhost:5001**.
+
+---
+
+### Docker: "WSL 2 installation is incomplete"
+
+Open PowerShell as Administrator and run:
+
+```powershell
+wsl --update
+wsl --set-default-version 2
+```
+
+Restart Docker Desktop afterwards.
+
+---
+
+### Docker: image build fails
+
+Ensure Docker Desktop is running (whale icon in system tray), then retry:
+
+```powershell
+docker compose build --no-cache
+docker compose up -d
+```
