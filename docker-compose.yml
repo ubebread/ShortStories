@@ -1,0 +1,28 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: shortstories-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: shortstories-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - app_data:/app/instance
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - OLLAMA_URL=http://ollama:11434/api/generate
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3}
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  app_data:
